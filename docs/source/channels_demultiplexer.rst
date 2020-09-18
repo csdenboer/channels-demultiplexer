@@ -10,6 +10,7 @@ Submodules
    channels_demultiplexer.apps
    channels_demultiplexer.conf
    channels_demultiplexer.demultiplexer
+   channels_demultiplexer.queue
 
 Module contents
 ---------------

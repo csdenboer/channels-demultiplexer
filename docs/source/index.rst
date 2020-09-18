@@ -21,6 +21,7 @@ Welcome to channels-demultiplexer's documentation!
    channels_demultiplexer.apps
    channels_demultiplexer.conf
    channels_demultiplexer.demultiplexer
+   channels_demultiplexer.queue
 
 Indices and tables
 ==================
