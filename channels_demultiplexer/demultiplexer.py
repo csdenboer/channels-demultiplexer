@@ -7,6 +7,7 @@ from channels.exceptions import StopConsumer
 from channels.generic.websocket import AsyncJsonWebsocketConsumer
 
 from .conf import settings
+from .queue import MessageQueue
 
 logger = logging.getLogger(__name__)
 
@@ -27,7 +28,7 @@ class WebsocketDemultiplexer(AsyncJsonWebsocketConsumer):
         super().__init__(*args, **kwargs)
 
         self._consumers: Dict[str, AsyncJsonWebsocketConsumer] = {}
-        self._input_queues: Dict[str, asyncio.Queue] = {}
+        self._input_queues: Dict[str, MessageQueue] = {}
 
         for stream, consumer in self.consumer_classes.items():
             self._consumers[stream] = consumer(self.scope)
@@ -38,7 +39,7 @@ class WebsocketDemultiplexer(AsyncJsonWebsocketConsumer):
             # patch accept so that connections are only accepted by the multiplexer
             self._consumers[stream].accept = self._accept_multiplexed
 
-            self._input_queues[stream] = asyncio.Queue()
+            self._input_queues[stream] = MessageQueue()
 
     async def __call__(self, receive, send):
         await asyncio.wait(
@@ -142,7 +143,8 @@ class WebsocketDemultiplexer(AsyncJsonWebsocketConsumer):
         await self._join_queues(input_queues)
 
     @classmethod
-    async def _join_queues(cls, queues: List[asyncio.Queue]):
-        await asyncio.wait_for(
-            [input_queue.join() for input_queue in queues], timeout=settings.CHANNELS_DEMULTIPLEXER_TIMEOUT,
+    async def _join_queues(cls, queues: List[MessageQueue]):
+        await asyncio.wait(
+            [input_queue.join() for input_queue in queues],
+            timeout=settings.CHANNELS_DEMULTIPLEXER_CONSUMER_CLOSE_TIMEOUT,
         )
