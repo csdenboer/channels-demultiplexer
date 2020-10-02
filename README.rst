@@ -40,11 +40,13 @@ Install using `pip`:
 
    $ pip install channels-demultiplexer
 
-Add ``channels_demultiplexer`` to your ``INSTALLED_APPS``::
+Add ``channels_demultiplexer`` to your ``INSTALLED_APPS``
+
+.. code-block:: python
 
     INSTALLED_APPS = [
         # channels_demultiplexer can be in any position in the INSTALLED_APPS list.
-        'channels_demultiplexer',
+        "channels_demultiplexer",
     ]
 
 Create a demultiplexer in ``demultiplexer.py``:
