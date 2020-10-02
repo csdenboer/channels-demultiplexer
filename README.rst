@@ -31,6 +31,52 @@ Channels Demultiplexer provides a standard way to multiplex different data strea
 
 It expects JSON-formatted WebSocket frames with two keys, stream and payload (both configurable). It matches the stream against a mapping to find a consumer and subsequently forwards the message. Consumers do not require any modifications in order to be plugged in to a (de)multiplexer, so you can hook them directly in the ``routing.py`` file as well as in a (de)multiplexer.
 
+Quickstart
+-------------
+
+Install using `pip`:
+
+.. code-block:: bash
+
+   $ pip install channels-demultiplexer
+
+Add ``channels_demultiplexer`` to your ``INSTALLED_APPS``::
+
+    INSTALLED_APPS = [
+        # channels_demultiplexer can be in any position in the INSTALLED_APPS list.
+        'channels_demultiplexer',
+    ]
+
+Create a demultiplexer in ``demultiplexer.py``:
+
+.. code-block:: python
+
+    from channels_demultiplexer.demultiplexer import WebsocketDemultiplexer
+
+    from .consumers import EchoConsumer, AnotherConsumer
+
+    class Demultiplexer(WebsocketDemultiplexer):
+        # Wire your async JSON consumers here: {stream_name: consumer}
+        consumer_classes = {
+            "echo": EchoConsumer,
+            "other": AnotherConsumer,
+        }
+
+Add the demultiplexer to your Channels routing configuration:
+
+.. code-block:: python
+
+    from channels.routing import ProtocolTypeRouter, URLRouter
+    from django.conf.urls import url
+
+    from .demultiplexer import Demultiplexer
+
+    application = ProtocolTypeRouter({
+        "websocket": URLRouter([
+            url(r"^/$", Demultiplexer),
+        ])
+    })
+
 Documentation
 -------------
 
