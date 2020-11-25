@@ -70,12 +70,14 @@ Add the demultiplexer to your Channels routing configuration:
 
     from channels.routing import ProtocolTypeRouter, URLRouter
     from django.conf.urls import url
+    from django.core.asgi import get_asgi_application
 
     from .demultiplexer import Demultiplexer
 
-    application = ProtocolTypeRouter({
+    application = ProtocolTypeRouter
+        "http": get_asgi_application(),
         "websocket": URLRouter([
-            url(r"^/$", Demultiplexer),
+            url(r"^/$", Demultiplexer.as_asgi()),
         ])
     })
 
