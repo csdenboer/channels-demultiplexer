@@ -16,9 +16,11 @@ __all__ = ("WebsocketDemultiplexer",)
 
 class WebsocketDemultiplexer(AsyncJsonWebsocketConsumer):
     """
-    Async JSON-understanding WebSocket consumer subclass that handles multiplexing and demultiplexing streams using a
-    "stream" key in a top-level dict and the actual payload in a sub-dict called "payload" (both configurable). This
-    lets you run multiple streams over a single WebSocket connection in a standardised way.
+    Async JSON-understanding WebSocket consumer subclass that handles
+    multiplexing and demultiplexing streams using a "stream" key in a
+    top-level dict and the actual payload in a sub-dict called "payload"
+    (both configurable). This lets you run multiple streams over a single
+    WebSocket connection in a standardised way.
     """
 
     # mapping between stream and multiplexed consumer
@@ -31,24 +33,23 @@ class WebsocketDemultiplexer(AsyncJsonWebsocketConsumer):
         self._input_queues: Dict[str, MessageQueue] = {}
 
         for stream, consumer in self.consumer_classes.items():
-            self._consumers[stream] = consumer(self.scope)
+            self._consumers[stream] = consumer(*args)
             # patch send_json so that messages are multiplexed
             self._consumers[stream].send_json = partial(
-                self._send_json_multiplexed, stream
-            )
+                self._send_json_multiplexed, stream)
             # patch accept so that connections are only accepted by the multiplexer
             self._consumers[stream].accept = self._accept_multiplexed
 
             self._input_queues[stream] = MessageQueue()
 
-    async def __call__(self, receive, send):
-        await asyncio.wait(
-            [super().__call__(receive, send)]
-            + [
-                consumer(self._input_queues[stream].get, send,)
-                for stream, consumer in self._consumers.items()
-            ]
-        )
+    async def __call__(self, scope, receive, send):
+        await asyncio.wait([super().__call__(scope, receive, send)] + [
+            consumer(
+                scope,
+                self._input_queues[stream].get,
+                send,
+            ) for stream, consumer in self._consumers.items()
+        ])
 
     async def connect(self):
         """
@@ -63,29 +64,24 @@ class WebsocketDemultiplexer(AsyncJsonWebsocketConsumer):
         """
         Demultiplex message by matching it with a consumer.
         """
-        if (
-            isinstance(content, dict)
-            and settings.CHANNELS_DEMULTIPLEXER_MULTIPLEX_KEY in content
-            and settings.CHANNELS_DEMULTIPLEXER_PAYLOAD_KEY in content
-        ):
+        if (isinstance(content, dict)
+                and settings.CHANNELS_DEMULTIPLEXER_MULTIPLEX_KEY in content
+                and settings.CHANNELS_DEMULTIPLEXER_PAYLOAD_KEY in content):
             try:
-                input_queue = self._input_queues[
-                    content[settings.CHANNELS_DEMULTIPLEXER_MULTIPLEX_KEY]
-                ]
+                input_queue = self._input_queues[content[
+                    settings.CHANNELS_DEMULTIPLEXER_MULTIPLEX_KEY]]
             except KeyError:
                 raise ValueError(
-                    "Invalid multiplexed frame received (stream not mapped)"
-                )
+                    "Invalid multiplexed frame received (stream not mapped)")
             else:
                 # add message to the queue
-                await input_queue.put(
-                    {
-                        "type": "websocket.receive",
-                        "text": await self.encode_json(
-                            content[settings.CHANNELS_DEMULTIPLEXER_PAYLOAD_KEY]
-                        ),
-                    }
-                )
+                await input_queue.put({
+                    "type":
+                    "websocket.receive",
+                    "text":
+                    await self.encode_json(
+                        content[settings.CHANNELS_DEMULTIPLEXER_PAYLOAD_KEY]),
+                })
         else:
             raise ValueError(
                 "Invalid multiplexed **frame received (no channel/payload key)"
@@ -96,7 +92,10 @@ class WebsocketDemultiplexer(AsyncJsonWebsocketConsumer):
         Closes the WebSocket from the server end.
         """
         # let all child applications close first
-        await self._disconnect_consumers({"type": "websocket.disconnect", "code": code})
+        await self._disconnect_consumers({
+            "type": "websocket.disconnect",
+            "code": code
+        })
 
         await super().close(code)
 
@@ -110,7 +109,10 @@ class WebsocketDemultiplexer(AsyncJsonWebsocketConsumer):
         # raise StopConsumer to halt the ASGI application cleanly and let the server clean it up
         raise StopConsumer()
 
-    async def _send_json_multiplexed(self, stream: str, content: Any, close=False):
+    async def _send_json_multiplexed(self,
+                                     stream: str,
+                                     content: Any,
+                                     close=False):
         """
         Multiplex message.
         """
