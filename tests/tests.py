@@ -11,9 +11,7 @@ async def test_connect():
         pass
 
     class Demultiplexer(WebsocketDemultiplexer):
-        consumer_classes = {
-            "echo": MyWebsocketConsumer
-        }
+        consumer_classes = {"echo": MyWebsocketConsumer}
 
     communicator = WebsocketCommunicator(Demultiplexer, "/")
 
@@ -27,53 +25,56 @@ async def test_connect():
 @pytest.mark.asyncio
 async def test_receive_json_missing_multiplex_key():
     class Demultiplexer(WebsocketDemultiplexer):
-        pass
+        consumer_classes = {}
 
-    demultiplexer = Demultiplexer({})
+    demultiplexer = Demultiplexer()
 
     with pytest.raises(ValueError) as excinfo:
         await demultiplexer.receive_json({"payload": {}})
 
-    assert "Invalid multiplexed **frame received (no channel/payload key)" == str(excinfo.value)
+    assert "Invalid multiplexed **frame received (no channel/payload key)" == str(
+        excinfo.value
+    )
 
 
 @pytest.mark.asyncio
 async def test_receive_json_missing_payload_key():
     class Demultiplexer(WebsocketDemultiplexer):
-        pass
+        consumer_classes = {}
 
-    demultiplexer = Demultiplexer({})
+    demultiplexer = Demultiplexer()
 
     with pytest.raises(ValueError) as excinfo:
         await demultiplexer.receive_json({"stream": "echo"})
 
-    assert "Invalid multiplexed **frame received (no channel/payload key)" == str(excinfo.value)
+    assert "Invalid multiplexed **frame received (no channel/payload key)" == str(
+        excinfo.value
+    )
 
 
 @pytest.mark.asyncio
 async def test_receive_json_unknown_multiplex_key():
     class Demultiplexer(WebsocketDemultiplexer):
-        pass
+        consumer_classes = {}
 
-    demultiplexer = Demultiplexer({})
+    demultiplexer = Demultiplexer()
 
     with pytest.raises(ValueError) as excinfo:
         await demultiplexer.receive_json({"stream": "echo", "payload": {}})
 
-    assert "Invalid multiplexed frame received (stream not mapped)" == str(excinfo.value)
+    assert "Invalid multiplexed frame received (stream not mapped)" == str(
+        excinfo.value
+    )
 
 
 @pytest.mark.asyncio
 async def test_receive_json_success():
     class MyWebsocketConsumer(websocket.AsyncJsonWebsocketConsumer):
-
         async def receive_json(self, content, **kwargs):
             await self.send_json(content)
 
     class Demultiplexer(WebsocketDemultiplexer):
-        consumer_classes = {
-            "echo": MyWebsocketConsumer
-        }
+        consumer_classes = {"echo": MyWebsocketConsumer}
 
     communicator = WebsocketCommunicator(Demultiplexer, "/")
 
@@ -91,14 +92,11 @@ async def test_receive_json_success():
 @pytest.mark.asyncio
 async def test_send_json_multiplexed_success():
     class MyWebsocketConsumer(websocket.AsyncJsonWebsocketConsumer):
-
         async def receive_json(self, content, **kwargs):
             await self.send_json({"success": True})
 
     class Demultiplexer(WebsocketDemultiplexer):
-        consumer_classes = {
-            "echo": MyWebsocketConsumer
-        }
+        consumer_classes = {"echo": MyWebsocketConsumer}
 
     communicator = WebsocketCommunicator(Demultiplexer, "/")
 
@@ -118,14 +116,16 @@ async def test_settings_multiplex_key(settings):
     settings.CHANNELS_DEMULTIPLEXER_MULTIPLEX_KEY = "type"
 
     class Demultiplexer(WebsocketDemultiplexer):
-        pass
+        consumer_classes = {}
 
-    demultiplexer = Demultiplexer({})
+    demultiplexer = Demultiplexer()
 
     with pytest.raises(ValueError) as excinfo:
         await demultiplexer.receive_json({"stream": "echo", "payload": {}})
 
-    assert "Invalid multiplexed **frame received (no channel/payload key)" == str(excinfo.value)
+    assert "Invalid multiplexed **frame received (no channel/payload key)" == str(
+        excinfo.value
+    )
 
 
 @pytest.mark.asyncio
@@ -133,11 +133,13 @@ async def test_settings_payload_key(settings):
     settings.CHANNELS_DEMULTIPLEXER_PAYLOAD_KEY = "body"
 
     class Demultiplexer(WebsocketDemultiplexer):
-        pass
+        consumer_classes = {}
 
-    demultiplexer = Demultiplexer({})
+    demultiplexer = Demultiplexer()
 
     with pytest.raises(ValueError) as excinfo:
         await demultiplexer.receive_json({"stream": "echo", "payload": {}})
 
-    assert "Invalid multiplexed **frame received (no channel/payload key)" == str(excinfo.value)
+    assert "Invalid multiplexed **frame received (no channel/payload key)" == str(
+        excinfo.value
+    )
