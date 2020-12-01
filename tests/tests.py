@@ -13,7 +13,7 @@ async def test_connect():
     class Demultiplexer(WebsocketDemultiplexer):
         consumer_classes = {"echo": MyWebsocketConsumer}
 
-    communicator = WebsocketCommunicator(Demultiplexer, "/")
+    communicator = WebsocketCommunicator(Demultiplexer.as_asgi(), "/")
 
     connected, subprotocol = await communicator.connect()
 
@@ -76,7 +76,7 @@ async def test_receive_json_success():
     class Demultiplexer(WebsocketDemultiplexer):
         consumer_classes = {"echo": MyWebsocketConsumer}
 
-    communicator = WebsocketCommunicator(Demultiplexer, "/")
+    communicator = WebsocketCommunicator(Demultiplexer.as_asgi(), "/")
 
     await communicator.connect()
 
@@ -98,7 +98,7 @@ async def test_send_json_multiplexed_success():
     class Demultiplexer(WebsocketDemultiplexer):
         consumer_classes = {"echo": MyWebsocketConsumer}
 
-    communicator = WebsocketCommunicator(Demultiplexer, "/")
+    communicator = WebsocketCommunicator(Demultiplexer.as_asgi(), "/")
 
     await communicator.connect()
 
