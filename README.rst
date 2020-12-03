@@ -31,6 +31,7 @@ Channels Demultiplexer provides a standard way to multiplex different data strea
 
 It expects JSON-formatted WebSocket frames with two keys, stream and payload (both configurable). It matches the stream against a mapping to find a consumer and subsequently forwards the message. Consumers do not require any modifications in order to be plugged in to a (de)multiplexer, so you can hook them directly in the ``routing.py`` file as well as in a (de)multiplexer.
 
+
 Quickstart
 -------------
 
@@ -87,6 +88,18 @@ Documentation
 For more information on installation and configuration see the documentation at:
 
 https://channels-demultiplexer.readthedocs.io/
+
+
+Compatibility
+---------------------
+
++--------------------+--------------------------------+
+| channels           |  channels_demultiplexer        |
++====================+================================+
+| v3.x               | latest                         |
++--------------------+--------------------------------+
+| v2.x               | v1.0.1                         |
++--------------------+--------------------------------+
 
 
 Issues
