@@ -75,7 +75,7 @@ Add the demultiplexer to your Channels routing configuration:
 
     from .demultiplexer import Demultiplexer
 
-    application = ProtocolTypeRouter
+    application = ProtocolTypeRouter({
         "http": get_asgi_application(),
         "websocket": URLRouter([
             url(r"^/$", Demultiplexer.as_asgi()),

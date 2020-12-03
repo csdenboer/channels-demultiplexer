@@ -9,7 +9,7 @@ Channels Demultiplexer is easy to install from the PyPI index:
 
 This will install ``channels-demultiplexer`` along with its dependencies:
 
-* channels;
+* channels 3;
 * django-appconf.
 
 After installing the package, the project settings need to be configured.

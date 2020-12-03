@@ -13,6 +13,7 @@ Welcome to channels-demultiplexer's documentation!
    installation
    configuration
    usage
+   routing
 
 .. toctree::
    :maxdepth: 2
