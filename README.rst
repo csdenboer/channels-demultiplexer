@@ -22,7 +22,7 @@ channels-demultiplexer
    :target: https://codecov.io/gh/csdenboer/channels-demultiplexer
    :alt: Coverage
 
-(De)multiplexer for Django Channels 2
+(De)multiplexer for Django Channels 3 (and 2)
 
 Functionality
 -------------
