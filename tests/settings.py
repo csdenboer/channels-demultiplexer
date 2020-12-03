@@ -56,7 +56,13 @@ LOGGING = {
     "version": 1,
     "disable_existing_loggers": False,
     "handlers": {"console": {"class": "logging.StreamHandler"}},
-    "loggers": {"channels_demultiplexer": {"handlers": ["console"], "level": "INFO", "propagate": False}},
+    "loggers": {
+        "channels_demultiplexer": {
+            "handlers": ["console"],
+            "level": "INFO",
+            "propagate": False,
+        }
+    },
 }
 
 SECRET_KEY = "secret"

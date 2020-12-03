@@ -16,9 +16,11 @@ __all__ = ("WebsocketDemultiplexer",)
 
 class WebsocketDemultiplexer(AsyncJsonWebsocketConsumer):
     """
-    Async JSON-understanding WebSocket consumer subclass that handles multiplexing and demultiplexing streams using a
-    "stream" key in a top-level dict and the actual payload in a sub-dict called "payload" (both configurable). This
-    lets you run multiple streams over a single WebSocket connection in a standardised way.
+    Async JSON-understanding WebSocket consumer subclass that handles
+    multiplexing and demultiplexing streams using a "stream" key in a
+    top-level dict and the actual payload in a sub-dict called "payload"
+    (both configurable). This lets you run multiple streams over a single
+    WebSocket connection in a standardised way.
     """
 
     # mapping between stream and multiplexed consumer
@@ -31,7 +33,7 @@ class WebsocketDemultiplexer(AsyncJsonWebsocketConsumer):
         self._input_queues: Dict[str, MessageQueue] = {}
 
         for stream, consumer in self.consumer_classes.items():
-            self._consumers[stream] = consumer(self.scope)
+            self._consumers[stream] = consumer(*args)
             # patch send_json so that messages are multiplexed
             self._consumers[stream].send_json = partial(
                 self._send_json_multiplexed, stream
@@ -41,11 +43,15 @@ class WebsocketDemultiplexer(AsyncJsonWebsocketConsumer):
 
             self._input_queues[stream] = MessageQueue()
 
-    async def __call__(self, receive, send):
+    async def __call__(self, scope, receive, send):
         await asyncio.wait(
-            [super().__call__(receive, send)]
+            [super().__call__(scope, receive, send)]
             + [
-                consumer(self._input_queues[stream].get, send,)
+                consumer(
+                    scope,
+                    self._input_queues[stream].get,
+                    send,
+                )
                 for stream, consumer in self._consumers.items()
             ]
         )

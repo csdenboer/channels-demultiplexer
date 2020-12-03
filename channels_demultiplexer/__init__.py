@@ -1,1 +1,1 @@
-default_app_config = 'channels_demultiplexer.apps.ChannelsDemultiplexerConfig'
+default_app_config = "channels_demultiplexer.apps.ChannelsDemultiplexerConfig"

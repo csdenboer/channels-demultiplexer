@@ -1,5 +1,5 @@
 -i https://pypi.org/simple
-channels==2.4.0
+channels==3.0.2
 coverage==5.3
 django-appconf==1.0.4
 pytest-asyncio==0.14.0
