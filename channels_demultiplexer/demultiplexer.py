@@ -47,11 +47,7 @@ class WebsocketDemultiplexer(AsyncJsonWebsocketConsumer):
         await asyncio.wait(
             [super().__call__(scope, receive, send)]
             + [
-                consumer(
-                    scope,
-                    self._input_queues[stream].get,
-                    send,
-                )
+                consumer(scope, self._input_queues[stream].get, send,)
                 for stream, consumer in self._consumers.items()
             ]
         )
@@ -83,13 +79,18 @@ class WebsocketDemultiplexer(AsyncJsonWebsocketConsumer):
                     "Invalid multiplexed frame received (stream not mapped)"
                 )
             else:
+                if settings.CHANNELS_DEMULTIPLEXER_FORWARD_PAYLOAD_OF_MESSAGE is True:
+                    content_to_forward = content[
+                        settings.CHANNELS_DEMULTIPLEXER_PAYLOAD_KEY
+                    ]
+                else:
+                    content_to_forward = content
+
                 # add message to the queue
                 await input_queue.put(
                     {
                         "type": "websocket.receive",
-                        "text": await self.encode_json(
-                            content[settings.CHANNELS_DEMULTIPLEXER_PAYLOAD_KEY]
-                        ),
+                        "text": await self.encode_json(content_to_forward),
                     }
                 )
         else:

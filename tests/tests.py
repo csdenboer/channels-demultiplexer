@@ -68,7 +68,9 @@ async def test_receive_json_unknown_multiplex_key():
 
 
 @pytest.mark.asyncio
-async def test_receive_json_success():
+async def test_receive_json_forward_payload_of_message_false(settings):
+    settings.CHANNELS_DEMULTIPLEXER_FORWARD_PAYLOAD_OF_MESSAGE = False
+
     class MyWebsocketConsumer(websocket.AsyncJsonWebsocketConsumer):
         async def receive_json(self, content, **kwargs):
             await self.send_json(content)
@@ -80,7 +82,29 @@ async def test_receive_json_success():
 
     await communicator.connect()
 
-    # missing type
+    await communicator.send_json_to({"stream": "echo", "payload": {}})
+
+    response = await communicator.receive_json_from()
+    assert response == {"stream": "echo", "payload": {"stream": "echo", "payload": {}}}
+
+    await communicator.disconnect()
+
+
+@pytest.mark.asyncio
+async def test_receive_json_forward_payload_of_message_true(settings):
+    settings.CHANNELS_DEMULTIPLEXER_FORWARD_PAYLOAD_OF_MESSAGE = True
+
+    class MyWebsocketConsumer(websocket.AsyncJsonWebsocketConsumer):
+        async def receive_json(self, content, **kwargs):
+            await self.send_json(content)
+
+    class Demultiplexer(WebsocketDemultiplexer):
+        consumer_classes = {"echo": MyWebsocketConsumer}
+
+    communicator = WebsocketCommunicator(Demultiplexer.as_asgi(), "/")
+
+    await communicator.connect()
+
     await communicator.send_json_to({"stream": "echo", "payload": {}})
 
     response = await communicator.receive_json_from()
@@ -102,7 +126,6 @@ async def test_send_json_multiplexed_success():
 
     await communicator.connect()
 
-    # missing type
     await communicator.send_json_to({"stream": "echo", "payload": {}})
 
     response = await communicator.receive_json_from()
@@ -143,3 +166,5 @@ async def test_settings_payload_key(settings):
     assert "Invalid multiplexed **frame received (no channel/payload key)" == str(
         excinfo.value
     )
+
+
