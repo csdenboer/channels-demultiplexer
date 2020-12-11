@@ -13,8 +13,10 @@ class ChannelsDemultiplexerConf(appconf.AppConf):
     PAYLOAD_KEY = "payload"
     # maximum number of seconds consumers have to disconnect
     CONSUMER_CLOSE_TIMEOUT = 5
-    # determines whether only the payload is forwarded to the consumer or the full original message
-    FORWARD_PAYLOAD_OF_MESSAGE = True
+    # determines whether the envelope is managed by the multiplexer -> only the payload of a message is forwarded to a
+    # consumer and messages sent by a consumer are automatically wrapped in an envelope with the consumer's multiplexing
+    # key
+    MANAGE_ENVELOPE = True
 
     class Meta:
         prefix = "channels_demultiplexer"

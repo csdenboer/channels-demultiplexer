@@ -68,12 +68,12 @@ async def test_receive_json_unknown_multiplex_key():
 
 
 @pytest.mark.asyncio
-async def test_receive_json_forward_payload_of_message_false(settings):
-    settings.CHANNELS_DEMULTIPLEXER_FORWARD_PAYLOAD_OF_MESSAGE = False
+async def test_receive_json_manage_envelope_false(settings):
+    settings.CHANNELS_DEMULTIPLEXER_MANAGE_ENVELOPE = False
 
     class MyWebsocketConsumer(websocket.AsyncJsonWebsocketConsumer):
         async def receive_json(self, content, **kwargs):
-            await self.send_json(content)
+            await self.send_json({"received": content})
 
     class Demultiplexer(WebsocketDemultiplexer):
         consumer_classes = {"echo": MyWebsocketConsumer}
@@ -85,18 +85,18 @@ async def test_receive_json_forward_payload_of_message_false(settings):
     await communicator.send_json_to({"stream": "echo", "payload": {}})
 
     response = await communicator.receive_json_from()
-    assert response == {"stream": "echo", "payload": {"stream": "echo", "payload": {}}}
+    assert response == {"received": {"stream": "echo", "payload": {}}}
 
     await communicator.disconnect()
 
 
 @pytest.mark.asyncio
-async def test_receive_json_forward_payload_of_message_true(settings):
-    settings.CHANNELS_DEMULTIPLEXER_FORWARD_PAYLOAD_OF_MESSAGE = True
+async def test_receive_json_manage_envelope_true(settings):
+    settings.CHANNELS_DEMULTIPLEXER_MANAGE_ENVELOPE = True
 
     class MyWebsocketConsumer(websocket.AsyncJsonWebsocketConsumer):
         async def receive_json(self, content, **kwargs):
-            await self.send_json(content)
+            await self.send_json({"received": content})
 
     class Demultiplexer(WebsocketDemultiplexer):
         consumer_classes = {"echo": MyWebsocketConsumer}
@@ -108,13 +108,38 @@ async def test_receive_json_forward_payload_of_message_true(settings):
     await communicator.send_json_to({"stream": "echo", "payload": {}})
 
     response = await communicator.receive_json_from()
-    assert response == {"stream": "echo", "payload": {}}
+    assert response == {"stream": "echo", "payload": {"received": {}}}
 
     await communicator.disconnect()
 
 
 @pytest.mark.asyncio
-async def test_send_json_multiplexed_success():
+async def test_send_json_manage_envelope_false(settings):
+    settings.CHANNELS_DEMULTIPLEXER_MANAGE_ENVELOPE = False
+
+    class MyWebsocketConsumer(websocket.AsyncJsonWebsocketConsumer):
+        async def receive_json(self, content, **kwargs):
+            await self.send_json({"success": True})
+
+    class Demultiplexer(WebsocketDemultiplexer):
+        consumer_classes = {"echo": MyWebsocketConsumer}
+
+    communicator = WebsocketCommunicator(Demultiplexer.as_asgi(), "/")
+
+    await communicator.connect()
+
+    await communicator.send_json_to({"stream": "echo", "payload": {}})
+
+    response = await communicator.receive_json_from()
+    assert response == {"success": True}
+
+    await communicator.disconnect()
+
+
+@pytest.mark.asyncio
+async def test_send_json_manage_envelope_true(settings):
+    settings.CHANNELS_DEMULTIPLEXER_MANAGE_ENVELOPE = True
+
     class MyWebsocketConsumer(websocket.AsyncJsonWebsocketConsumer):
         async def receive_json(self, content, **kwargs):
             await self.send_json({"success": True})

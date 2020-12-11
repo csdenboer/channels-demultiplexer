@@ -34,10 +34,13 @@ class WebsocketDemultiplexer(AsyncJsonWebsocketConsumer):
 
         for stream, consumer in self.consumer_classes.items():
             self._consumers[stream] = consumer(*args)
-            # patch send_json so that messages are multiplexed
-            self._consumers[stream].send_json = partial(
-                self._send_json_multiplexed, stream
-            )
+
+            if settings.CHANNELS_DEMULTIPLEXER_MANAGE_ENVELOPE is True:
+                # patch send_json so that messages are multiplexed
+                self._consumers[stream].send_json = partial(
+                    self._send_json_multiplexed, stream
+                )
+
             # patch accept so that connections are only accepted by the multiplexer
             self._consumers[stream].accept = self._accept_multiplexed
 
@@ -79,7 +82,7 @@ class WebsocketDemultiplexer(AsyncJsonWebsocketConsumer):
                     "Invalid multiplexed frame received (stream not mapped)"
                 )
             else:
-                if settings.CHANNELS_DEMULTIPLEXER_FORWARD_PAYLOAD_OF_MESSAGE is True:
+                if settings.CHANNELS_DEMULTIPLEXER_MANAGE_ENVELOPE is True:
                     content_to_forward = content[
                         settings.CHANNELS_DEMULTIPLEXER_PAYLOAD_KEY
                     ]
