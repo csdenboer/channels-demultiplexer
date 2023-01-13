@@ -13,7 +13,7 @@ pytest-asyncio = "*"
 
 [packages]
 django-appconf = "==1.0.4"
-channels = "~=3.0"
+channels = {version = "==4.0.0", extras = ["daphne"]}
 
 [requires]
-python_version = "3.7"
+python_version = "3"
